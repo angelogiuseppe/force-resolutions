@@ -50,8 +50,6 @@ async function forceResolutions() {
         (key) => key === resolution
       );
 
-      console.log(keyPaths);
-
       // Modifications to be performed
       let modifications: any = {};
 
@@ -92,8 +90,6 @@ async function forceResolutions() {
           modifications[keyPath] = resolutions[resolution];
         }
       });
-
-      console.log(modifications);
 
       // Edit the file and set changes
       packageLockJSONContent = editUsingPaths(
