@@ -2,7 +2,9 @@
   "name": "force-resolutions",
   "version": "1.0.4",
   "description": "This package modifies package-lock.json to force the installation of specified versions of transitive dependencies",
-  "bin": "dist/index.js",
+  "bin": {
+    "force-resolutions": "dist/index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c"
