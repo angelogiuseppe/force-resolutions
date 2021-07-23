@@ -42,69 +42,71 @@ async function forceResolutions() {
     // Map resolutions
     const resolutions = packageJSONContent.resolutions;
 
-    // Iterate over all resolutions
-    Object.keys(resolutions).forEach((resolution) => {
-      // Find paths of the resolutions
-      const keyPaths = findKeyPaths(
-        packageLockJSONContent,
-        (key) => key === resolution
-      );
+    if (resolutions) {
+      // Iterate over all resolutions
+      Object.keys(resolutions).forEach((resolution) => {
+        // Find paths of the resolutions
+        const keyPaths = findKeyPaths(
+          packageLockJSONContent,
+          (key) => key === resolution
+        );
 
-      // Modifications to be performed
-      let modifications: any = {};
+        // Modifications to be performed
+        let modifications: any = {};
 
-      // Iterate resolutions key paths
-      keyPaths.forEach((keyPath) => {
-        // Regex to identify dependencies key paths
-        const dependenciesRegex = /.dependencies./g;
+        // Iterate resolutions key paths
+        keyPaths.forEach((keyPath) => {
+          // Regex to identify dependencies key paths
+          const dependenciesRegex = /.dependencies./g;
 
-        // Regex identify if npm 7
-        const packagesRegex = /packages./g;
+          // Regex identify if npm 7
+          const packagesRegex = /packages./g;
 
-        // Regex to identify requires key paths
-        const requiresRegex = /.requires./g;
+          // Regex to identify requires key paths
+          const requiresRegex = /.requires./g;
 
-        // Check the kind of key path and define modifications
-        if (
-          keyPath.match(dependenciesRegex) &&
-          !keyPath.match(requiresRegex) &&
-          !keyPath.match(packagesRegex)
-        ) {
-          // Change version
-          modifications[`${keyPath}.version`] = resolutions[resolution];
-          // Delete resolved
-          modifications[`${keyPath}.resolved`] = undefined;
+          // Check the kind of key path and define modifications
+          if (
+            keyPath.match(dependenciesRegex) &&
+            !keyPath.match(requiresRegex) &&
+            !keyPath.match(packagesRegex)
+          ) {
+            // Change version
+            modifications[`${keyPath}.version`] = resolutions[resolution];
+            // Delete resolved
+            modifications[`${keyPath}.resolved`] = undefined;
 
-          // Delete integrity
-          modifications[`${keyPath}.integrity`] = undefined;
+            // Delete integrity
+            modifications[`${keyPath}.integrity`] = undefined;
 
-          // Delete requires
-          modifications[`${keyPath}.requires`] = undefined;
+            // Delete requires
+            modifications[`${keyPath}.requires`] = undefined;
 
-          // Handle npm 7 package lock json format
-        } else if (!!keyPath.match(packagesRegex)) {
-          // Change version
-          modifications[keyPath] = resolutions[resolution];
-        } else if (!!keyPath.match(requiresRegex)) {
-          // Change version
-          modifications[keyPath] = resolutions[resolution];
-        }
+            // Handle npm 7 package lock json format
+          } else if (!!keyPath.match(packagesRegex)) {
+            // Change version
+            modifications[keyPath] = resolutions[resolution];
+          } else if (!!keyPath.match(requiresRegex)) {
+            // Change version
+            modifications[keyPath] = resolutions[resolution];
+          }
+        });
+
+        // Edit the file and set changes
+        packageLockJSONContent = editUsingPaths(
+          packageLockJSONContent,
+          modifications
+        );
+
+        modifications = {};
       });
 
-      // Edit the file and set changes
-      packageLockJSONContent = editUsingPaths(
-        packageLockJSONContent,
-        modifications
+      // Write final processed file
+      await promises.writeFile(
+        defaultPackageLockJsonPath,
+        JSON.stringify(packageLockJSONContent, null, 2)
       );
-
-      modifications = {};
-    });
-
-    // Write final processed file
-    await promises.writeFile(
-      defaultPackageLockJsonPath,
-      JSON.stringify(packageLockJSONContent, null, 2)
-    );
+    }
   }
 }
 
