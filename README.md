@@ -1,7 +1,7 @@
 # force-resolutions
 
 This package modifies package-lock.json to force the installation of specified versions of a set of transitive dependencies (dependencies of dependencies).
-## Getting started
+### Getting started
 
 1. Add a field `resolutions` with the dependency version you want to fix at the main level of your `package.json`.
 
@@ -38,7 +38,7 @@ npm ls ssri
 ```
 
 
-## Running this repository locally
+### Running this repository locally
 
 1. Install the dependencies of the project:
 

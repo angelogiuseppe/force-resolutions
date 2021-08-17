@@ -117,7 +117,7 @@ async function forceResolutions() {
           defaultPackageLockJsonPath,
           JSON.stringify(packageLockJSONContent, null, 2)
         );
-        console.log(reset, green, "Finished applying forced resolutions");
+        console.log(reset, green, "Finished applying forced resolutions", reset);
       }
     }
   } catch (error) {
