@@ -93,8 +93,29 @@ async function forceResolutions() {
               // Change version
               modifications[keyPath] = resolutions[resolution];
             } else if (!!keyPath.match(requiresRegex)) {
-              // Change version
+              // Change version on requires
               modifications[keyPath] = resolutions[resolution];
+
+              // Create new dependencies object / edit it
+
+              const packageDependenciesPath = keyPath.replace(
+                "requires",
+                "dependencies"
+              );
+
+              console.log(packageDependenciesPath);
+
+              // Set version
+              modifications[`${packageDependenciesPath}.version`] =
+                resolutions[resolution];
+              // Set resolved
+              modifications[`${packageDependenciesPath}.resolved`] = undefined;
+
+              // Set integrity
+              modifications[`${packageDependenciesPath}.integrity`] = undefined;
+
+              // Set requires
+              modifications[`${packageDependenciesPath}.requires`] = undefined;
             }
           });
 
@@ -117,7 +138,12 @@ async function forceResolutions() {
           defaultPackageLockJsonPath,
           JSON.stringify(packageLockJSONContent, null, 2)
         );
-        console.log(reset, green, "Finished applying forced resolutions", reset);
+        console.log(
+          reset,
+          green,
+          "Finished applying forced resolutions",
+          reset
+        );
       }
     }
   } catch (error) {
