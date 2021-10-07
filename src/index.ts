@@ -133,7 +133,7 @@ async function forceResolutions() {
           JSON.stringify(packageLockJSONContent, null, 2)
         );
         console.log(
-          kleur.green("Finished applying forced resolutions / this is different")
+          kleur.green("Finished applying forced resolutions")
         );
       }
     }
