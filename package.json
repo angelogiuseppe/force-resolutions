@@ -1,6 +1,6 @@
 {
   "name": "force-resolutions",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "This package modifies package-lock.json to force the installation of specified versions of transitive dependencies",
   "bin": {
     "force-resolutions": "dist/index.js"
