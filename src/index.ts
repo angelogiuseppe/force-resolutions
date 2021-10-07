@@ -2,7 +2,7 @@ import { promises } from "fs";
 import { checkIfFileExists } from "./check-if-file-exists";
 import { findKeyPaths } from "./find-key-paths";
 import { editUsingPaths } from "./edit-using-paths";
-import { dim, cyan, green, red, reset } from "./colors";
+import kleur from "kleur";
 
 async function forceResolutions() {
   try {
@@ -46,7 +46,7 @@ async function forceResolutions() {
       // Map resolutions
       const resolutions = packageJSONContent.resolutions;
 
-      console.log(reset, cyan, "Applying forced resolutions");
+      console.log(kleur.cyan("Applying forced resolutions"));
 
       if (resolutions) {
         // Iterate over all resolutions
@@ -103,8 +103,6 @@ async function forceResolutions() {
                 "dependencies"
               );
 
-              console.log(packageDependenciesPath);
-
               // Set version
               modifications[`${packageDependenciesPath}.version`] =
                 resolutions[resolution];
@@ -126,11 +124,7 @@ async function forceResolutions() {
           );
 
           modifications = {};
-          console.log(
-            reset,
-            dim,
-            `${resolution} => ${resolutions[resolution]}`
-          );
+          console.log(kleur.dim(`${resolution} => ${resolutions[resolution]}`));
         });
 
         // Write final processed file
@@ -139,18 +133,13 @@ async function forceResolutions() {
           JSON.stringify(packageLockJSONContent, null, 2)
         );
         console.log(
-          reset,
-          green,
-          "Finished applying forced resolutions",
-          reset
+          kleur.green("Finished applying forced resolutions / this is different")
         );
       }
     }
   } catch (error) {
     console.log(
-      reset,
-      red,
-      "An unexpected error has occurred while running force-resolutions"
+      kleur.red("An unexpected error has occurred while running force-resolutions")
     );
     console.error(error);
   }

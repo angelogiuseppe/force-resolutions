@@ -1,6 +1,15 @@
-# force-resolutions
+ <p align="center">
+    <img src="https://raw.githubusercontent.com/angelogiuseppe/force-resolutions/master/assets/logo/force-resolutions-logo.png" alt="force-resolutions-logo">
+</p>
 
+---
+
+ <p align="center">
 This package modifies package-lock.json to force the installation of specified versions of a set of transitive dependencies (dependencies of dependencies).
+</p>
+
+---
+
 ### Getting started
 
 1. Add a field `resolutions` with the dependency version you want to fix at the main level of your `package.json`.
@@ -23,7 +32,7 @@ Example:
 
 3. Install dependencies
 
-```
+```shell
 npm install
 ```
 
@@ -37,6 +46,7 @@ If a `package.lock.json` is not detected the script will not run, and any other 
 npm ls ssri
 ```
 
+---
 
 ### Running this repository locally
 
@@ -51,3 +61,15 @@ npm install
 ```shell
 npm run build
 ```
+
+---
+
+### Acknowledgments
+
+This project was inspired by the next package: [npm-force-resolutions](https://www.npmjs.com/package/npm-force-resolutions).
+
+---
+
+### Why this project was created
+
+This project was created because **npm-force-resolutions** became not suitable for the necesities the team I was working in had. We needed to avoid triggering the execution of the script when there was no `package-lock.json`, descriptive error logs, descriptive logs during the execution, faster download times, compatibility with multiple npm versions and faster execution times.
