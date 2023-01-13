@@ -50,6 +50,21 @@ npm ls ssri
 
 ### Running this repository locally
 
+**NodeJS and NPM versions**
+NodeJS version:
+
+```shell
+v16.13.1
+```
+
+NPM version:
+
+```shell
+8.1.2
+```
+
+**Instructions**
+
 1. Install the dependencies of the project:
 
 ```shell
@@ -63,6 +78,7 @@ npm run build
 ```
 
 3. Go to the dist folder
+
 ```shell
 cd dist
 ```
@@ -71,17 +87,13 @@ cd dist
 
 4. Add a resolutions field in the package.json and inside of it a package to override
 
-4. Run the compiled file
+5. Run the compiled file
 
 ```shell
 node index.js
 ```
+
 5. Search in the package-lock.json to see that the versions of the packages are updated
----
-
-### Acknowledgments
-
-This project was inspired by the next package: [npm-force-resolutions](https://www.npmjs.com/package/npm-force-resolutions).
 
 ---
 
@@ -90,10 +102,25 @@ This project was inspired by the next package: [npm-force-resolutions](https://w
 This project was created because **npm-force-resolutions** became not suitable for the necesities the team I was working in had. We needed to avoid triggering the execution of the script when there was no `package-lock.json`, descriptive error logs, descriptive logs during the execution, faster download times, compatibility with multiple npm versions and faster execution times.
 
 ---
+
 ### Discord community
 
-To simplify communication I have created a discord community, if you detect an issue with this package or want to improve it in some way, you can contact me here: 
+To simplify communication I have created a discord community, if you detect an issue with this package or want to improve it in some way, you can contact me here:
 
 [Join discord community](https://discord.gg/fNEEthRGJu)
 
+---
 
+### NPM
+
+[Find the package on NPM](https://www.npmjs.com/package/force-resolutions)
+
+[See other versions of the package on NPM](https://www.npmjs.com/package/force-resolutions?activeTab=versions)
+
+---
+
+### Acknowledgments
+
+This project was inspired by the next package: [npm-force-resolutions](https://www.npmjs.com/package/npm-force-resolutions).
+
+Special thanks to Denis Gulin for contributing to fix issues that were happening with the package and improving the code.
