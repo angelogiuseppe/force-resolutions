@@ -1,148 +1,152 @@
-import { promises } from "fs";
-import { checkIfFileExists } from "./check-if-file-exists";
-import { findKeyPaths } from "./find-key-paths";
-import { editUsingPaths } from "./edit-using-paths";
+import {promises} from "fs";
+import {checkIfFileExists} from "./check-if-file-exists";
+import {findKeyPaths} from "./find-key-paths";
+import {editUsingPaths} from "./edit-using-paths";
 import kleur from "kleur";
+import {join} from "path";
+import {hasFirst, hasMiddle} from "./array-helpers";
+import {getModifications} from "./get-modifications";
+import {getValue} from "./get-value";
 
 async function forceResolutions() {
-  try {
-    // Check if current platform is windows
-    const isWindows = process.platform === "win32" ? true : false;
+    try {
+        // Get working directory
+        const currentWorkingDirectory = process.cwd();
 
-    // Get working directory
-    const currentWorkingDirectory = process.cwd();
+        // Construct default package lock json path
+        const defaultPackageLockJsonPath = join(currentWorkingDirectory, "package-lock.json");
 
-    const properSlash = isWindows ? "\\" : "/";
+        // Construct default package json path
+        const defaultPackageJsonPath = join(currentWorkingDirectory, "package.json");
 
-    // Construct default package lock json path
-    const defaultPackageLockJsonPath = `${currentWorkingDirectory}${properSlash}package-lock.json`;
+        // Check if package/package lock json exists
+        const [packageLockJsonExists, packageJsonExists] = await Promise.all([
+            defaultPackageLockJsonPath,
+            defaultPackageJsonPath
+        ].map(checkIfFileExists));
 
-    // Construct default package json path
-    const defaultPackageJsonPath = `${currentWorkingDirectory}${properSlash}package.json`;
+        if (packageLockJsonExists && packageJsonExists) {
+            // Read files contents
+            const [packageLockJSON, packageJSON] = await Promise.all([
+                defaultPackageLockJsonPath,
+                defaultPackageJsonPath,
+            ].map(file => promises.readFile(file)));
 
-    // Check if package lock json exists
-    const packageLockJsonExists = await checkIfFileExists(
-      defaultPackageLockJsonPath
-    );
+            // Parse package lock json
+            let packageJSONContent = JSON.parse(packageJSON.toString());
 
-    // Check if package json exists
-    const packageJsonExists = await checkIfFileExists(defaultPackageJsonPath);
+            // Parse package lock json
+            let packageLockJSONContent = JSON.parse(packageLockJSON.toString());
 
-    if (packageLockJsonExists && packageJsonExists) {
-      // Read package json
-      const packageJSON = await promises.readFile(defaultPackageJsonPath);
+            // Map resolutions
+            const {resolutions} = packageJSONContent;
 
-      // Read package lock json
-      const packageLockJSON = await promises.readFile(
-        defaultPackageLockJsonPath
-      );
+            // Start processing
+            console.log(kleur.cyan("Applying forced resolutions:"));
 
-      // Parse package lock json
-      let packageJSONContent = JSON.parse(packageJSON.toString());
+            let changes = 0;
+            const collectChanges = (modifications: Map<string[], unknown>) => {
+                let count = changes;
+                for (const [k, v] of modifications.entries()) {
+                    if (getValue(packageLockJSONContent, k) !== v) {
+                        changes += 1;
+                    }
+                }
+                return changes > count;
+            };
 
-      // Parse package lock json
-      let packageLockJSONContent = JSON.parse(packageLockJSON.toString());
+            if (resolutions) {
+                // Iterate over all resolutions
+                Object.keys(resolutions).forEach((resolution) => {
+                    // Find paths of the resolutions
+                    const keyPaths = findKeyPaths(
+                        packageLockJSONContent,
+                        resolution
+                    );
 
-      // Map resolutions
-      const resolutions = packageJSONContent.resolutions;
+                    if (keyPaths.length < 1) return;
 
-      console.log(kleur.cyan("Applying forced resolutions"));
+                    // Iterate resolutions key paths
+                    const modifications = new Map<string[], Record<string, unknown>>();
+                    keyPaths.forEach((keyPath) => {
+                        // Check the kind of key path and define modifications
+                        if (
+                            hasMiddle('dependencies', keyPath) &&
+                            !hasMiddle('required', keyPath) &&
+                            !hasFirst('packages', keyPath)
+                        ) {
+                            getModifications(keyPath, {
+                                // Change version
+                                version: resolutions[resolution],
 
-      if (resolutions) {
-        // Iterate over all resolutions
-        Object.keys(resolutions).forEach((resolution) => {
-          // Find paths of the resolutions
-          const keyPaths = findKeyPaths(
-            packageLockJSONContent,
-            (key) => key === resolution
-          );
+                                // Delete resolved
+                                resolved: undefined,
 
-          // Modifications to be performed
-          let modifications: any = {};
+                                // Delete integrity
+                                integrity: undefined,
 
-          // Iterate resolutions key paths
-          keyPaths.forEach((keyPath) => {
-            // Regex to identify dependencies key paths
-            const dependenciesRegex = /.dependencies./g;
+                                // Delete requires
+                                requires: undefined,
+                            }, modifications);
 
-            // Regex identify if npm 7
-            const packagesRegex = /packages./g;
+                        }
+                        // Handle npm 7 package lock json format
+                        else if (hasFirst('packages', keyPath)) {
+                            // Change version
+                            getModifications(keyPath, resolutions[resolution], modifications);
+                        } else if (hasMiddle('requires', keyPath)) {
+                            // Change version on requires
+                            getModifications(keyPath, resolutions[resolution], modifications);
 
-            // Regex to identify requires key paths
-            const requiresRegex = /.requires./g;
+                            // Create new dependencies object / edit it
+                            getModifications(keyPath.map(k => k === "requires" ? "dependencies" : k), {
+                                // Set version, resolved, integrity & requires
+                                version: resolutions[resolution],
+                                resolved: undefined,
+                                integrity: undefined,
+                                requires: undefined,
+                            }, modifications);
+                        }
+                    });
 
-            // Check the kind of key path and define modifications
-            if (
-              keyPath.match(dependenciesRegex) &&
-              !keyPath.match(requiresRegex) &&
-              !keyPath.match(packagesRegex)
-            ) {
-              // Change version
-              modifications[`${keyPath}.version`] = resolutions[resolution];
-              // Delete resolved
-              modifications[`${keyPath}.resolved`] = undefined;
+                    if (collectChanges(modifications)) {
+                        // Edit the file and set changes
+                        packageLockJSONContent = editUsingPaths(
+                            packageLockJSONContent,
+                            modifications,
+                        );
 
-              // Delete integrity
-              modifications[`${keyPath}.integrity`] = undefined;
+                        const replacement = resolutions[resolution];
+                        console.log(kleur.dim(`${resolution} => ${replacement}`));
+                    }
+                });
 
-              // Delete requires
-              modifications[`${keyPath}.requires`] = undefined;
-
-              // Handle npm 7 package lock json format
-            } else if (!!keyPath.match(packagesRegex)) {
-              // Change version
-              modifications[keyPath] = resolutions[resolution];
-            } else if (!!keyPath.match(requiresRegex)) {
-              // Change version on requires
-              modifications[keyPath] = resolutions[resolution];
-
-              // Create new dependencies object / edit it
-
-              const packageDependenciesPath = keyPath.replace(
-                "requires",
-                "dependencies"
-              );
-
-              // Set version
-              modifications[`${packageDependenciesPath}.version`] =
-                resolutions[resolution];
-              // Set resolved
-              modifications[`${packageDependenciesPath}.resolved`] = undefined;
-
-              // Set integrity
-              modifications[`${packageDependenciesPath}.integrity`] = undefined;
-
-              // Set requires
-              modifications[`${packageDependenciesPath}.requires`] = undefined;
+                // Write final processed file
+                if (changes > 0) {
+                    await promises.writeFile(
+                        defaultPackageLockJsonPath,
+                        JSON.stringify(packageLockJSONContent, null, 2)
+                    );
+                    console.log(
+                        kleur.green("Finished applying forced resolutions.")
+                    );
+                } else {
+                    console.log(
+                        kleur.green("All resolutions already up-to-date.")
+                    );
+                }
             }
-          });
-
-          // Edit the file and set changes
-          packageLockJSONContent = editUsingPaths(
-            packageLockJSONContent,
-            modifications
-          );
-
-          modifications = {};
-          console.log(kleur.dim(`${resolution} => ${resolutions[resolution]}`));
-        });
-
-        // Write final processed file
-        await promises.writeFile(
-          defaultPackageLockJsonPath,
-          JSON.stringify(packageLockJSONContent, null, 2)
-        );
+        } else if (!packageLockJsonExists) {
+            console.log(
+                kleur.grey("package-lock.json not found - can not force resolutions (try to execute `npm install` command before).")
+            );
+        }
+    } catch (error) {
         console.log(
-          kleur.green("Finished applying forced resolutions")
+            kleur.red("An unexpected error has occurred while running force-resolutions.")
         );
-      }
+        console.error(error);
     }
-  } catch (error) {
-    console.log(
-      kleur.red("An unexpected error has occurred while running force-resolutions")
-    );
-    console.error(error);
-  }
 }
 
 forceResolutions().then();

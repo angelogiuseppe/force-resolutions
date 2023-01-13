@@ -1,4 +1,1 @@
-export {
-  checkIfFileExists,
-  CheckIfFileExists,
-} from "./check-if-file-exists";
+export * from "./check-if-file-exists";

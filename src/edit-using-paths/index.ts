@@ -1,5 +1,1 @@
-export {
-  EditUsingPaths,
-  currentPathToEdit,
-  editUsingPaths,
-} from "./edit-using-paths";
+export * from "./edit-using-paths";
