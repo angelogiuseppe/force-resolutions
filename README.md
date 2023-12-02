@@ -103,9 +103,17 @@ This project was created because **npm-force-resolutions** became not suitable f
 
 ---
 
+### Overrides, the new way of doing resolutions
+
+NPM released a new way to handle resolutions, now there is a property on package.json to do them, is called overrides. If you are using recent versions of node and npm you probably don't need this package. You can read more about overrides here:
+
+[NPM overrides documentation](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#overrides)
+
+---
+
 ### Discord community
 
-To simplify communication I have created a discord community, if you detect an issue with this package or want to improve it in some way, you can contact me here:
+To simplify communication I have created a discord community, if you detect an issue with this package or want to improve it in some way, you can contact me here. Normally I am busy with work, but if you contact me here I'll reply faster.
 
 [Join discord community](https://discord.gg/fNEEthRGJu)
 

@@ -1,0 +1,24 @@
+{
+  "name": "force-resolutions-dev",
+  "version": "1.0.11",
+  "description": "Dev enviroment for force-resolutions",
+  "volta": {
+    "node": "16.10.0",
+    "npm": "8.0.0"
+  },
+  "resolutions": {
+    "trim": "^1.0.1"
+  },
+  "scripts": {
+    "-preinstall-": "node index.js"
+  },
+  "files": [
+    "index.js"
+  ],
+  "author": "Angelo Giuseppe Balderas Lozano",
+  "license": "MIT",
+  "dependencies": {
+    "eslint-plugin-mdx": "^1.16.0"
+  }
+}
+

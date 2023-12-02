@@ -22,6 +22,5 @@ export default {
     shebang({
       include: "dist/index.js",
     }),
-    summary(),
   ],
 };
